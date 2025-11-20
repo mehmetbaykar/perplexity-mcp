@@ -706,7 +706,7 @@ describe("Perplexity MCP Server", () => {
     it("should prioritize PERPLEXITY_PROXY over HTTPS_PROXY", () => {
       process.env.PERPLEXITY_PROXY = "http://perplexity-proxy.example.com:8080";
       process.env.HTTPS_PROXY = "http://https-proxy.example.com:8080";
-      
+
       // PERPLEXITY_PROXY should take precedence
       expect(process.env.PERPLEXITY_PROXY).toBe("http://perplexity-proxy.example.com:8080");
     });
@@ -714,7 +714,7 @@ describe("Perplexity MCP Server", () => {
     it("should fall back to HTTPS_PROXY when PERPLEXITY_PROXY is not set", () => {
       delete process.env.PERPLEXITY_PROXY;
       process.env.HTTPS_PROXY = "http://https-proxy.example.com:8080";
-      
+
       expect(process.env.HTTPS_PROXY).toBe("http://https-proxy.example.com:8080");
     });
 
@@ -722,8 +722,82 @@ describe("Perplexity MCP Server", () => {
       delete process.env.PERPLEXITY_PROXY;
       delete process.env.HTTPS_PROXY;
       process.env.HTTP_PROXY = "http://http-proxy.example.com:8080";
-      
+
       expect(process.env.HTTP_PROXY).toBe("http://http-proxy.example.com:8080");
+    });
+  });
+
+  describe("Base URL Configuration", () => {
+    const originalEnv = process.env;
+
+    beforeEach(() => {
+      process.env = { ...originalEnv };
+    });
+
+    afterEach(() => {
+      process.env = originalEnv;
+    });
+
+    it("should use default base URL when PERPLEXITY_BASE_URL is not set", async () => {
+      delete process.env.PERPLEXITY_BASE_URL;
+
+      const mockResponse = {
+        choices: [{ message: { content: "Test response" } }],
+      };
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      } as Response);
+
+      const messages = [{ role: "user", content: "test" }];
+      await performChatCompletion(messages);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.perplexity.ai/chat/completions",
+        expect.any(Object)
+      );
+    });
+
+    it("should use custom base URL when PERPLEXITY_BASE_URL is set", async () => {
+      process.env.PERPLEXITY_BASE_URL = "https://custom-api.example.com";
+
+      const mockResponse = {
+        choices: [{ message: { content: "Test response" } }],
+      };
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      } as Response);
+
+      const messages = [{ role: "user", content: "test" }];
+      await performChatCompletion(messages);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://custom-api.example.com/chat/completions",
+        expect.any(Object)
+      );
+    });
+
+    it("should use custom base URL for search requests", async () => {
+      process.env.PERPLEXITY_BASE_URL = "https://custom-api.example.com";
+
+      const mockResponse = {
+        results: [],
+      };
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      } as Response);
+
+      await performSearch("test");
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://custom-api.example.com/search",
+        expect.any(Object)
+      );
     });
   });
 });

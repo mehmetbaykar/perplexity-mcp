@@ -13,7 +13,7 @@ The official MCP server implementation for the Perplexity API Platform, providin
 ### **perplexity_search**
 Direct web search using the Perplexity Search API. Returns ranked search results with metadata, perfect for finding current information.
 
-### **perplexity_ask** 
+### **perplexity_ask**
 General-purpose conversational AI with real-time web search using the `sonar-pro` model. Great for quick questions and everyday searches.
 
 ### **perplexity_research**
@@ -33,6 +33,11 @@ Advanced reasoning and problem-solving using the `sonar-reasoning-pro` model. Pe
 1. Get your Perplexity API Key from the [API Portal](https://www.perplexity.ai/account/api/group)
 2. Set it as an environment variable: `PERPLEXITY_API_KEY=your_key_here`
 3. (Optional) Set a timeout for requests: `PERPLEXITY_TIMEOUT_MS=600000`. The default is 5 minutes.
+4. (Optional) Set a custom base URL: `PERPLEXITY_BASE_URL=https://api.perplexity.ai`. The default is `https://api.perplexity.ai`.
+5. (Optional) Configure models for each tool:
+    - `PERPLEXITY_MODEL_ASK`: Model for `perplexity_ask` (default: `sonar-pro`)
+    - `PERPLEXITY_MODEL_RESEARCH`: Model for `perplexity_research` (default: `sonar-deep-research`)
+    - `PERPLEXITY_MODEL_REASON`: Model for `perplexity_reason` (default: `sonar-reasoning-pro`)
 
 ### Claude Code
 
@@ -59,7 +64,7 @@ claude
 Run in your terminal:
 
 ```bash
-claude mcp add perplexity --transport stdio --env PERPLEXITY_API_KEY=your_key_here -- npx -y perplexity-mcp
+claude mcp add perplexity --transport stdio --env PERPLEXITY_API_KEY=your_key_here -- npx -y @mehmetbaykar/perplexity-mcp-server
 ```
 
 Or add to your `claude.json`:
@@ -71,11 +76,12 @@ Or add to your `claude.json`:
     "command": "npx",
     "args": [
       "-y",
-      "perplexity-mcp"
+      "@mehmetbaykar/perplexity-mcp-server"
     ],
     "env": {
       "PERPLEXITY_API_KEY": "your_key_here",
-      "PERPLEXITY_TIMEOUT_MS": "600000"
+      "PERPLEXITY_TIMEOUT_MS": "600000",
+      "PERPLEXITY_BASE_URL": "https://api.perplexity.ai"
     }
   }
 }
@@ -90,24 +96,23 @@ Add to your `mcp.json` (Cursor) or `.vscode/mcp.json` (VS Code):
   "mcpServers": {
     "perplexity": {
       "command": "npx",
-      "args": ["-y", "@perplexity-ai/mcp-server"],
+      "args": ["-y", "@mehmetbaykar/perplexity-mcp-server"],
       "env": {
         "PERPLEXITY_API_KEY": "your_key_here",
-        "PERPLEXITY_TIMEOUT_MS": "600000"
+        "PERPLEXITY_TIMEOUT_MS": "600000",
+        "PERPLEXITY_BASE_URL": "https://api.perplexity.ai"
       }
     }
   }
 }
 ```
 
-Or use the one-click install badges at the top of this README.
-
 ### Codex
 
 Run in your terminal:
 
 ```bash
-codex mcp add perplexity --env PERPLEXITY_API_KEY=your_key_here -- npx -y @perplexity-ai/mcp-server
+codex mcp add perplexity --env PERPLEXITY_API_KEY=your_key_here -- npx -y @mehmetbaykar/perplexity-mcp-server
 ```
 
 ### Claude Desktop
@@ -119,10 +124,11 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "perplexity": {
       "command": "npx",
-      "args": ["-y", "@perplexity-ai/mcp-server"],
+      "args": ["-y", "@mehmetbaykar/perplexity-mcp-server"],
       "env": {
         "PERPLEXITY_API_KEY": "your_key_here",
-        "PERPLEXITY_TIMEOUT_MS": "600000"
+        "PERPLEXITY_TIMEOUT_MS": "600000",
+        "PERPLEXITY_BASE_URL": "https://api.perplexity.ai"
       }
     }
   }
@@ -134,7 +140,7 @@ Add to your `claude_desktop_config.json`:
 For any MCP-compatible client, use:
 
 ```bash
-npx @perplexity-ai/mcp-server
+npx @mehmetbaykar/perplexity-mcp-server
 ```
 
 ### Proxy Setup (For Corporate Networks)
@@ -181,6 +187,10 @@ The HTTP server supports these configuration options:
 - **`BIND_ADDRESS`** - Network interface to bind to (default: `127.0.0.1` for local, use `0.0.0.0` for hosted)
 - **`ALLOWED_ORIGINS`** - Comma-separated list of allowed CORS origins (default: `http://localhost:3000,http://127.0.0.1:3000`, use `*` for public service)
 - **`PERPLEXITY_API_KEY`** - Your Perplexity API key (required)
+- **`PERPLEXITY_BASE_URL`** - Custom base URL for the Perplexity API (default: `https://api.perplexity.ai`)
+- **`PERPLEXITY_MODEL_ASK`** - Model for `perplexity_ask` (default: `sonar-pro`)
+- **`PERPLEXITY_MODEL_RESEARCH`** - Model for `perplexity_research` (default: `sonar-deep-research`)
+- **`PERPLEXITY_MODEL_REASON`** - Model for `perplexity_reason` (default: `sonar-reasoning-pro`)
 
 #### Using Docker
 

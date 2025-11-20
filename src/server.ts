@@ -4,31 +4,30 @@ import { fetch as undiciFetch, ProxyAgent } from "undici";
 
 // Retrieve the Perplexity API key from environment variables
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
-
 /**
  * Gets the proxy URL from environment variables.
  * Checks PERPLEXITY_PROXY, HTTPS_PROXY, HTTP_PROXY in order.
- * 
+ *
  * @returns {string | undefined} The proxy URL if configured, undefined otherwise
  */
 function getProxyUrl(): string | undefined {
-  return process.env.PERPLEXITY_PROXY || 
-         process.env.HTTPS_PROXY || 
-         process.env.HTTP_PROXY || 
+  return process.env.PERPLEXITY_PROXY ||
+         process.env.HTTPS_PROXY ||
+         process.env.HTTP_PROXY ||
          undefined;
 }
 
 /**
  * Creates a proxy-aware fetch function.
  * Uses undici with ProxyAgent when a proxy is configured, otherwise uses native fetch.
- * 
+ *
  * @param {string} url - The URL to fetch
  * @param {RequestInit} options - Fetch options
  * @returns {Promise<Response>} The fetch response
  */
 async function proxyAwareFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const proxyUrl = getProxyUrl();
-  
+
   if (proxyUrl) {
     // Use undici with ProxyAgent when proxy is configured
     const proxyAgent = new ProxyAgent(proxyUrl);
@@ -103,9 +102,10 @@ export async function performChatCompletion(
 
   // Read timeout fresh each time to respect env var changes
   const TIMEOUT_MS = parseInt(process.env.PERPLEXITY_TIMEOUT_MS || "300000", 10);
+  const PERPLEXITY_BASE_URL = process.env.PERPLEXITY_BASE_URL || "https://api.perplexity.ai";
 
   // Construct the API endpoint URL and request body
-  const url = new URL("https://api.perplexity.ai/chat/completions");
+  const url = new URL(`${PERPLEXITY_BASE_URL}/chat/completions`);
   const body = {
     model: model,
     messages: messages,
@@ -196,7 +196,7 @@ export function formatSearchResults(data: any): string {
   }
 
   let formattedResults = `Found ${data.results.length} search results:\n\n`;
-  
+
   data.results.forEach((result: any, index: number) => {
     formattedResults += `${index + 1}. **${result.title}**\n`;
     formattedResults += `   URL: ${result.url}\n`;
@@ -234,8 +234,9 @@ export async function performSearch(
 
   // Read timeout fresh each time to respect env var changes
   const TIMEOUT_MS = parseInt(process.env.PERPLEXITY_TIMEOUT_MS || "300000", 10);
+  const PERPLEXITY_BASE_URL = process.env.PERPLEXITY_BASE_URL || "https://api.perplexity.ai";
 
-  const url = new URL("https://api.perplexity.ai/search");
+  const url = new URL(`${PERPLEXITY_BASE_URL}/search`);
   const body: any = {
     query: query,
     max_results: maxResults,
@@ -295,7 +296,7 @@ export async function performSearch(
 /**
  * Creates and configures the Perplexity MCP server with all tools.
  * This factory function is transport-agnostic and returns a configured server instance.
- * 
+ *
  * @returns The configured MCP server instance
  */
 export function createPerplexityServer() {
@@ -328,7 +329,8 @@ export function createPerplexityServer() {
     },
     async ({ messages }) => {
       validateMessages(messages, "perplexity_ask");
-      const result = await performChatCompletion(messages, "sonar-pro");
+      const model = process.env.PERPLEXITY_MODEL_ASK || "sonar-pro";
+      const result = await performChatCompletion(messages, model);
       return {
         content: [{ type: "text", text: result }],
         structuredContent: { response: result },
@@ -363,7 +365,8 @@ export function createPerplexityServer() {
     async ({ messages, strip_thinking }) => {
       validateMessages(messages, "perplexity_research");
       const stripThinking = typeof strip_thinking === "boolean" ? strip_thinking : false;
-      const result = await performChatCompletion(messages, "sonar-deep-research", stripThinking);
+      const model = process.env.PERPLEXITY_MODEL_RESEARCH || "sonar-deep-research";
+      const result = await performChatCompletion(messages, model, stripThinking);
       return {
         content: [{ type: "text", text: result }],
         structuredContent: { response: result },
@@ -398,7 +401,8 @@ export function createPerplexityServer() {
     async ({ messages, strip_thinking }) => {
       validateMessages(messages, "perplexity_reason");
       const stripThinking = typeof strip_thinking === "boolean" ? strip_thinking : false;
-      const result = await performChatCompletion(messages, "sonar-reasoning-pro", stripThinking);
+      const model = process.env.PERPLEXITY_MODEL_REASON || "sonar-reasoning-pro";
+      const result = await performChatCompletion(messages, model, stripThinking);
       return {
         content: [{ type: "text", text: result }],
         structuredContent: { response: result },
@@ -435,7 +439,7 @@ export function createPerplexityServer() {
       const maxResults = typeof max_results === "number" ? max_results : 10;
       const maxTokensPerPage = typeof max_tokens_per_page === "number" ? max_tokens_per_page : 1024;
       const countryCode = typeof country === "string" ? country : undefined;
-      
+
       const result = await performSearch(query, maxResults, maxTokensPerPage, countryCode);
       return {
         content: [{ type: "text", text: result }],

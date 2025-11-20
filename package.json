@@ -1,7 +1,7 @@
 {
-  "name": "@perplexity-ai/mcp-server",
+  "name": "@mehmetbaykar/perplexity-mcp-server",
   "version": "0.5.0",
-  "mcpName": "io.github.perplexityai/mcp-server",
+  "mcpName": "io.github.mehmetbaykar/perplexity-mcp-server",
   "description": "Real-time web search, reasoning, and research through Perplexity's API",
   "keywords": [
     "ai",
@@ -15,10 +15,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/perplexityai/modelcontextprotocol.git"
+    "url": "git+https://github.com/mehmetbaykar/perplexity-mcp.git"
   },
   "license": "MIT",
-  "author": "Perplexity <>",
+  "author": "Mehmet Baykar",
   "publishConfig": {
     "access": "public"
   },
