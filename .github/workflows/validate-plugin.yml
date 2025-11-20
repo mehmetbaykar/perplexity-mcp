@@ -1,15 +1,8 @@
 name: Validate Plugin Configuration
 
 on:
-  pull_request:
-    paths:
-      - '.claude-plugin/**'
-      - 'package.json'
   push:
     branches: [main]
-    paths:
-      - '.claude-plugin/**'
-      - 'package.json'
 
 jobs:
   validate:
